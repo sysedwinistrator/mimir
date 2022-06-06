@@ -68,6 +68,7 @@
 * [ENHANCEMENT] Recommend fast disks for ingesters and store-gateways in production tips. #1903
 * [ENHANCEMENT] Explain the runtime override of active series matchers. #1868
 * [ENHANCEMENT] Clarify "Set rule group" API specification. #1869
+* [ENHANCEMENT] Published Mimir jsonnet documentation. #2024
 
 ## 2.1.0
 ### Grafana Mimir
