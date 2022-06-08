@@ -94,12 +94,12 @@ mimir:
     frontend:
       log_queries_longer_than: 10s
       align_queries_with_step: true
-      {{- if index .Values "memcached-results" "enabled" }}
+      {{- if .Values.memcached_results.enabled }}
       results_cache:
         backend: memcached
         memcached:
-          addresses: dns+{{ .Release.Name }}-memcached-results.{{ .Release.Namespace }}.svc:11211
-          max_item_size: {{ (index .Values "memcached-results").maxItemMemory }}
+          addresses: dns+{{ .Release.Name }}-memcached-results-headless.{{ .Release.Namespace }}.svc:{{ .Values.memcached_results.port }}
+          max_item_size: {{ .Values.memcached_results.maxItemMemory }}
       cache_results: true
       {{- end }}
 
@@ -137,23 +137,23 @@ mimir:
         chunks_cache:
           backend: memcached
           memcached:
-            addresses: dns+{{ .Release.Name }}-memcached.{{ .Release.Namespace }}.svc:11211
+            addresses: dns+{{ .Release.Name }}-memcached-headless.{{ .Release.Namespace }}.svc:{{ .Values.memcached.port }}
             max_item_size: {{ .Values.memcached.maxItemMemory }}
             timeout: 450ms
         {{- end }}
-        {{- if index .Values "memcached-metadata" "enabled" }}
+        {{- if .Values.memcached_metadata.enabled }}
         metadata_cache:
           backend: memcached
           memcached:
-            addresses: dns+{{ .Release.Name }}-memcached-metadata.{{ .Release.Namespace }}.svc:11211
-            max_item_size: {{ (index .Values "memcached-metadata").maxItemMemory }}
+            addresses: dns+{{ .Release.Name }}-memcached-metadata-headless.{{ .Release.Namespace }}.svc:{{ .Values.memcached_metadata.port }}
+            max_item_size: {{ .Values.memcached_metadata.maxItemMemory }}
         {{- end }}
-        {{- if index .Values "memcached-queries" "enabled" }}
+        {{- if .Values.memcached_index_queries.enabled }}
         index_cache:
           backend: memcached
           memcached:
-            addresses: dns+{{ .Release.Name }}-memcached-queries.{{ .Release.Namespace }}.svc:11211
-            max_item_size: {{ (index .Values "memcached-queries").maxItemMemory }}
+            addresses: dns+{{ .Release.Name }}-memcached-index-queries-headless.{{ .Release.Namespace }}.svc:{{ .Values.memcached_index_queries.port }}
+            max_item_size: {{ .Values.memcached_index_queries.maxItemMemory }}
         {{- end }}
       {{- if .Values.minio.enabled }}
       s3:
@@ -990,132 +990,308 @@ compactor:
   extraEnvFrom: []
 
 memcached:
-  enabled: false
-  architecture: high-availability
-  arguments:
-    - -m 8192
-    - -o
-    - modern
-    - -v
-    - -I 1m
-    - -c 4096
+  # -- Specifies whether memcached should be enabled
+  enabled: true
+
+  # -- Total number of memcached replicas
+  replicas: 1
+
+  # -- Container image settings for memcached
   image:
     repository: memcached
-    tag: 1.6.9
+    tag: 1.6.9-alpine
+    pullPolicy: IfNotPresent
+
+  # -- Port of the memcached service
+  port: 11211
+
+  # -- Amount of memory allocated to memcached for object storage (in MB).
+  allocatedMemory: 8192
+
   # maxItemMemory is in bytes. Should match memcached -I flag (which is in MB)
   # It is a string to avoid https://github.com/helm/helm/issues/1707.
   maxItemMemory: '1048576'  # (* 1 (* 1024 1024))
-  metrics:
-    enabled: true
-    image:
-      registry: quay.io
-      repository: prometheus/memcached-exporter
-      tag: v0.9.0
-  replicaCount: 1
+
+  # -- Extra init containers for memcached pods
+  initContainers: []
+  # -- Security context for memcached pods
+  securityContext: {}
+  # -- Annotations for the memcached pods
+  annotations: {}
+  # -- Node selector for memcached pods
+  nodeSelector: {}
+  # -- Affinity for memcached pods
+  affinity: {}
+  # -- Tolerations for memcached pods
+  tolerations: []
+  # -- Pod Disruption Budget
+  podDisruptionBudget: {}
+  # -- The name of the PriorityClass for memcached pods
+  priorityClassName: null
+  # -- Labels for memcached pods
+  podLabels: {}
+  # -- Annotations for memcached pods
+  podAnnotations: {}
+  # -- Management policy for memcached pods
+  podManagementPolicy: Parallel
+  # -- Grace period to allow the memcached to shutdown before it is killed
+  terminationGracePeriodSeconds: 60
+
+  # -- Stateful memcached strategy
+  statefulStrategy:
+    type: RollingUpdate
+
+  # -- Additional CLI args for memcached
+  extraArgs: []
+
+  # -- Additional containers to be added to the memcached pod.
+  extraContainers: []
+
+  # -- Resource requests and limits for the memcached
   resources:
     limits:
       # memory limits should match requests
       memory: 9830Mi
     requests:
       cpu: 500m
-      # memory requests should be exceed memcached -m flag
+      # memory requests should be exceeded memcached -m flag
       memory: 9830Mi  # (floor (* 1.2 8192))
 
-memcached-queries:
-  enabled: false
-  architecture: high-availability
-  arguments:
-    - -m 2048
-    - -o
-    - modern
-    - -v
-    - -I 15m
-    - -c 1024
+  # -- Service annotations and labels
+  service:
+    annotations: {}
+    labels: {}
+
+  # -- Whether memcached metrics should be exported
+  metricsEnabled: true
+
+memcached_index_queries:
+  # -- Specifies whether memcached-index-queries should be enabled
+  enabled: true
+
+  # -- Total number of memcached-index-queries replicas
+  replicas: 1
+
+  # -- Container image settings for memcached-index-queries
   image:
     repository: memcached
-    tag: 1.6.9
-  # maxItemMemory is in bytes. Should match memcached -I flag (which is in MB)
+    tag: 1.6.9-alpine
+    pullPolicy: IfNotPresent
+
+  # -- Port of the memcached-index-queries service
+  port: 11211
+
+  # -- Amount of memory allocated to memcached-index-queries for object storage (in MB).
+  allocatedMemory: 2048
+
+  # maxItemMemory is in bytes. Should match memcached-index-queries -I flag (which is in MB)
   # It is a string to avoid https://github.com/helm/helm/issues/1707.
   maxItemMemory: '15728640'  # (* 15 (* 1024 1024))
-  metrics:
-    enabled: true
-    image:
-      registry: quay.io
-      repository: prometheus/memcached-exporter
-      tag: v0.9.0
-  replicaCount: 1
+
+  # -- Extra init containers for memcached-index-queries pods
+  initContainers: []
+  # -- Security context for memcached-index-queries pods
+  securityContext: {}
+  # -- Annotations for the memcached-index-queries pods
+  annotations: {}
+  # -- Node selector for memcached-index-queries pods
+  nodeSelector: {}
+  # -- Affinity for memcached-index-queries pods
+  affinity: {}
+  # -- Tolerations for memcached-index-queries pods
+  tolerations: []
+  # -- Pod Disruption Budget
+  podDisruptionBudget: {}
+  # -- The name of the PriorityClass for memcached-index-queries pods
+  priorityClassName: null
+  # -- Labels for memcached-index-queries pods
+  podLabels: {}
+  # -- Annotations for memcached-index-queries pods
+  podAnnotations: {}
+  # -- Management policy for memcached-index-queries pods
+  podManagementPolicy: Parallel
+  # -- Grace period to allow the memcached-index-queries to shutdown before it is killed
+  terminationGracePeriodSeconds: 60
+
+  # -- Stateful memcached-index-queries strategy
+  statefulStrategy:
+    type: RollingUpdate
+
+  # -- Additional CLI args for memcached-index-queries
+  extraArgs: []
+
+  # -- Additional containers to be added to the memcached-index-queries pod.
+  extraContainers: []
+
+  # -- Resource requests and limits for the memcached-index-queries
   resources:
     limits:
       # memory limits should match requests
       memory: 2457Mi
     requests:
       cpu: 500m
-      # memory requests should be exceed memcached -m flag
+      # memory requests should be exceeded memcached-index-queries -m flag
       memory: 2457Mi  # (floor (* 1.2 2048))
 
-memcached-metadata:
-  enabled: false
-  architecture: high-availability
-  arguments:
-    - -m 512
-    - -o
-    - modern
-    - -v
-    - -I 1m
-    - -c 1024
+  # -- Service annotations and labels
+  service:
+    annotations: {}
+    labels: {}
+
+  # -- Whether memcached-index-queries metrics should be exported
+  metricsEnabled: true
+
+memcached_metadata:
+  # -- Specifies whether memcached-metadata should be enabled
+  enabled: true
+
+  # -- Total number of memcached-metadata replicas
+  replicas: 1
+
+  # -- Container image settings for memcached-metadata
   image:
     repository: memcached
-    tag: 1.6.9
-  # maxItemMemory is in bytes. Should match memcached -I flag (which is in MB)
+    tag: 1.6.9-alpine
+    pullPolicy: IfNotPresent
+
+  # -- Port of the memcached-metadata service
+  port: 11211
+
+  # -- Amount of memory allocated to memcached-metadata for object storage (in MB).
+  allocatedMemory: 512
+
+  # maxItemMemory is in bytes. Should match memcached-metadata -I flag (which is in MB)
   # It is a string to avoid https://github.com/helm/helm/issues/1707.
   maxItemMemory: '1048576'  # (* 1 (* 1024 1024))
-  metrics:
-    enabled: true
-    image:
-      registry: quay.io
-      repository: prometheus/memcached-exporter
-      tag: v0.9.0
-  replicaCount: 1
+
+  # -- Extra init containers for memcached-metadata pods
+  initContainers: []
+  # -- Security context for memcached-metadata pods
+  securityContext: {}
+  # -- Annotations for the memcached-metadata pods
+  annotations: {}
+  # -- Node selector for memcached-metadata pods
+  nodeSelector: {}
+  # -- Affinity for memcached-metadata pods
+  affinity: {}
+  # -- Tolerations for memcached-metadata pods
+  tolerations: []
+  # -- Pod Disruption Budget
+  podDisruptionBudget: {}
+  # -- The name of the PriorityClass for memcached-metadata pods
+  priorityClassName: null
+  # -- Labels for memcached-metadata pods
+  podLabels: {}
+  # -- Annotations for memcached-metadata pods
+  podAnnotations: {}
+  # -- Management policy for memcached-metadata pods
+  podManagementPolicy: Parallel
+  # -- Grace period to allow the memcached-metadata to shutdown before it is killed
+  terminationGracePeriodSeconds: 60
+
+  # -- Stateful memcached-metadata strategy
+  statefulStrategy:
+    type: RollingUpdate
+
+  # -- Additional CLI args for memcached-metadata
+  extraArgs: []
+
+  # -- Additional containers to be added to the memcached-metadata pod.
+  extraContainers: []
+
+  # -- Resource requests and limits for the memcached-metadata
   resources:
     limits:
       # memory limits should match requests
       memory: 614Mi
     requests:
       cpu: 500m
-      # memory requests should be exceed memcached -m flag
+      # memory requests should be exceeded memcached-metadata -m flag
       memory: 614Mi  # (floor (* 1.2 512))
 
-memcached-results:
-  enabled: false
-  architecture: high-availability
-  arguments:
-    - -m 512
-    - -o
-    - modern
-    - -v
-    - -I 1m
-    - -c 1024
+  # -- Service annotations and labels
+  service:
+    annotations: {}
+    labels: {}
+
+  # -- Whether memcached-metadata metrics should be exported
+  metricsEnabled: true
+
+memcached_results:
+  # -- Specifies whether memcached-results should be enabled
+  enabled: true
+
+  # -- Total number of memcached-results replicas
+  replicas: 1
+
+  # -- Container image settings for memcached-results
   image:
     repository: memcached
-    tag: 1.6.9
-  # maxItemMemory is in bytes. Should match memcached -I flag (which is in MB)
+    tag: 1.6.9-alpine
+    pullPolicy: IfNotPresent
+
+  # -- Port of the memcached-results service
+  port: 11211
+
+  # -- Amount of memory allocated to memcached-results for object storage (in MB).
+  allocatedMemory: 512
+
+  # maxItemMemory is in bytes. Should match memcached-results -I flag (which is in MB)
   # It is a string to avoid https://github.com/helm/helm/issues/1707.
   maxItemMemory: '1048576'  # (* 1 (* 1024 1024))
-  metrics:
-    enabled: true
-    image:
-      registry: quay.io
-      repository: prometheus/memcached-exporter
-      tag: v0.9.0
-  replicaCount: 1
+
+  # -- Extra init containers for memcached-results pods
+  initContainers: []
+  # -- Security context for memcached-results pods
+  securityContext: {}
+  # -- Annotations for the memcached-results pods
+  annotations: {}
+  # -- Node selector for memcached-results pods
+  nodeSelector: {}
+  # -- Affinity for memcached-results pods
+  affinity: {}
+  # -- Tolerations for memcached-results pods
+  tolerations: []
+  # -- Pod Disruption Budget
+  podDisruptionBudget: {}
+  # -- The name of the PriorityClass for memcached-results pods
+  priorityClassName: null
+  # -- Labels for memcached-results pods
+  podLabels: {}
+  # -- Annotations for memcached-results pods
+  podAnnotations: {}
+  # -- Management policy for memcached-results pods
+  podManagementPolicy: Parallel
+  # -- Grace period to allow the memcached-results to shutdown before it is killed
+  terminationGracePeriodSeconds: 60
+
+  # -- Stateful memcached-results strategy
+  statefulStrategy:
+    type: RollingUpdate
+
+  # -- Additional CLI args for memcached-results
+  extraArgs: []
+
+  # -- Additional containers to be added to the memcached-results pod.
+  extraContainers: []
+
+  # -- Resource requests and limits for the memcached-results
   resources:
     limits:
       # memory limits should match requests
       memory: 614Mi
     requests:
       cpu: 500m
-      # memory requests should be exceed memcached -m flag
+      # memory requests should be exceeded memcached-results -m flag
       memory: 614Mi  # (floor (* 1.2 512))
+
+  # -- Service annotations and labels
+  service:
+    annotations: {}
+    labels: {}
+
+  # -- Whether memcached-results metrics should be exported
+  metricsEnabled: true
 
 minio:
   enabled: true

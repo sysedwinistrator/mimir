@@ -71,16 +71,16 @@ ingester:
 
 memcached:
   enabled: true
-  replicaCount: 2
+  replicas: 2
 
-memcached-queries:
+memcached_index_queries:
   enabled: true
-  replicaCount: 3
+  replicas: 3
 
-memcached-metadata:
+memcached_metadata:
   enabled: true
 
-memcached-results:
+memcached_results:
   enabled: true
 
 minio:

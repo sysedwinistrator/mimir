@@ -1,0 +1,87 @@
+{{- if .Values.memcached_index_queries.enabled -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "mimir.resourceName" (dict "ctx" . "component" "memcached-index-queries") }}
+  labels:
+    {{- include "mimir.labels" (dict "ctx" . "component" "memcached-index-queries") | nindent 4 }}
+  annotations:
+    {{- toYaml .Values.memcached_index_queries.annotations | nindent 4 }}
+spec:
+  podManagementPolicy: {{ .Values.memcached_index_queries.podManagementPolicy }}
+  replicas: {{ .Values.memcached_index_queries.replicas }}
+  selector:
+    matchLabels:
+      {{- include "mimir.selectorLabels" (dict "ctx" . "component" "memcached-index-queries") | nindent 6 }}
+  updateStrategy:
+    {{- toYaml .Values.memcached_index_queries.statefulStrategy | nindent 4 }}
+  serviceName: {{ template "mimir.fullname" . }}-memcached-index-queries
+
+  template:
+    metadata:
+      labels:
+        {{- include "mimir.podLabels" (dict "ctx" . "component" "memcached-index-queries") | nindent 8 }}
+        {{- with .Values.memcached_index_queries.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- with .Values.memcached_index_queries.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+
+    spec:
+      serviceAccountName: {{ template "mimir.serviceAccountName" . }}
+      {{- if .Values.memcached_index_queries.priorityClassName }}
+      priorityClassName: {{ .Values.memcached_index_queries.priorityClassName }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.memcached_index_queries.securityContext | nindent 8 }}
+      initContainers:
+        {{- toYaml .Values.memcached_index_queries.initContainers | nindent 8 }}
+      {{- if .Values.image.pullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.image.pullSecrets }}
+        - name: {{ . }}
+      {{- end }}
+      {{- end }}
+      nodeSelector:
+        {{- toYaml .Values.memcached_index_queries.nodeSelector | nindent 8 }}
+      affinity:
+        {{- toYaml .Values.memcached_index_queries.affinity | nindent 8 }}
+      tolerations:
+        {{- toYaml .Values.memcached_index_queries.tolerations | nindent 8 }}
+      terminationGracePeriodSeconds: {{ .Values.memcached_index_queries.terminationGracePeriodSeconds }}
+      containers:
+        {{- if .Values.memcached_index_queries.extraContainers }}
+        {{ toYaml .Values.memcached_index_queries.extraContainers | nindent 8 }}
+        {{- end }}
+        - name: memcached
+          image: {{ .Values.memcached_index_queries.image.repository}}:{{ .Values.memcached_index_queries.image.tag}}
+          imagePullPolicy: {{ .Values.memcached_index_queries.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.memcached_index_queries.port }}
+              name: client
+          args:
+            - -m {{ .Values.memcached_index_queries.allocatedMemory }}
+            - -o
+            - modern
+            - -I 15m
+            - -c 16384
+            - -v
+            - -u {{ .Values.memcached_index_queries.port }}
+            {{- range $key, $value := .Values.memcached_index_queries.extraArgs }}
+            - "-{{ $key }} {{ $value }}"
+            {{- end }}
+
+      {{- if .Values.memcached_index_queries.metricsEnabled }}
+        - name: exporter
+          image: prom/memcached-exporter:v0.6.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9150
+              name: http-metrics
+          args:
+            - "--memcached.address=localhost:{{ .Values.memcached_index_queries.port }}"
+            - "--web.listen-address=0.0.0.0:9150"
+      {{- end }}
+{{- end -}}
