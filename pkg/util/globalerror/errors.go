@@ -52,6 +52,11 @@ const (
 	RequestRateLimited   ID = "tenant-max-request-rate"
 	IngestionRateLimited ID = "tenant-max-ingestion-rate"
 	TooManyHAClusters    ID = "tenant-too-many-ha-clusters"
+
+	OutOfBounds                 ID = "out-of-bounds"
+	OutOfOrderSample            ID = "out-of-order-sample"
+	DuplicateSampleForTimestamp ID = "duplicate-sample-for-timestamp"
+	ExemplarSeriesMissing       ID = "exemplar-series-missing"
 )
 
 // Message returns the provided msg, appending the error id.

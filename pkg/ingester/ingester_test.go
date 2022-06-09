@@ -526,7 +526,7 @@ func TestIngester_Push(t *testing.T) {
 					},
 				},
 			},
-			expectedErr:              httpgrpc.Errorf(http.StatusBadRequest, wrapWithUser(wrappedTSDBIngestExemplarErr(errExemplarRef, model.Time(1000), mimirpb.FromLabelsToLabelAdapters(metricLabels), []mimirpb.LabelAdapter{{Name: "traceID", Value: "123"}}), userID).Error()),
+			expectedErr:              httpgrpc.Errorf(http.StatusBadRequest, wrapWithUser(wrappedTSDBIngestExemplarMissingSeriesErr(errExemplarMissingSeriesRef, model.Time(1000), mimirpb.FromLabelsToLabelAdapters(metricLabels), []mimirpb.LabelAdapter{{Name: "traceID", Value: "123"}}), userID).Error()),
 			expectedIngested:         nil,
 			expectedMetadataIngested: nil,
 			additionalMetrics: []string{

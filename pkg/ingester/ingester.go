@@ -56,6 +56,7 @@ import (
 	"github.com/grafana/mimir/pkg/storage/sharding"
 	mimir_tsdb "github.com/grafana/mimir/pkg/storage/tsdb"
 	"github.com/grafana/mimir/pkg/util"
+	"github.com/grafana/mimir/pkg/util/globalerror"
 	util_log "github.com/grafana/mimir/pkg/util/log"
 	util_math "github.com/grafana/mimir/pkg/util/math"
 	"github.com/grafana/mimir/pkg/util/spanlogger"
@@ -91,7 +92,7 @@ const (
 )
 
 var (
-	errExemplarRef = errors.New("exemplars not ingested because series not already present")
+	errExemplarMissingSeriesRef = errors.New("exemplars not ingested because series not already present")
 )
 
 // BlocksUploader interface is used to have an easy way to mock it in tests.
@@ -721,7 +722,7 @@ func (i *Ingester) PushWithCleanup(ctx context.Context, req *mimirpb.WriteReques
 			// already exist.  If it does not then drop.
 			if ref == 0 {
 				updateFirstPartial(func() error {
-					return wrappedTSDBIngestExemplarErr(errExemplarRef,
+					return wrappedTSDBIngestExemplarMissingSeriesErr(errExemplarMissingSeriesRef,
 						model.Time(ts.Exemplars[0].TimestampMs), ts.Labels, ts.Exemplars[0].Labels)
 				})
 				failedExemplarsCount += len(ts.Exemplars)
@@ -741,7 +742,7 @@ func (i *Ingester) PushWithCleanup(ctx context.Context, req *mimirpb.WriteReques
 
 					// Error adding exemplar
 					updateFirstPartial(func() error {
-						return wrappedTSDBIngestExemplarErr(err, model.Time(ex.TimestampMs), ts.Labels, ex.Labels)
+						return wrappedTSDBIngestExemplarOtherErr(err, model.Time(ex.TimestampMs), ts.Labels, ex.Labels)
 					})
 					failedExemplarsCount++
 				}
@@ -2079,10 +2080,35 @@ func wrappedTSDBIngestErr(ingestErr error, timestamp model.Time, labels []mimirp
 		return nil
 	}
 
-	return fmt.Errorf(errTSDBIngest, ingestErr, timestamp.Time().UTC().Format(time.RFC3339Nano), mimirpb.FromLabelAdaptersToLabels(labels).String())
+	var errID globalerror.ID
+	var errMsg string
+	switch cause := errors.Cause(ingestErr); cause {
+	case storage.ErrOutOfBounds:
+		errID = globalerror.OutOfBounds
+		errMsg = "something out of bounds"
+	case storage.ErrOutOfOrderSample:
+		errID = globalerror.OutOfOrderSample
+		errMsg = "something sample out of order"
+	case storage.ErrDuplicateSampleForTimestamp:
+		errID = globalerror.DuplicateSampleForTimestamp
+		errMsg = "something duplicate sample for timestamp"
+	}
+
+	return fmt.Errorf(errID.Message(errTSDBIngest), errMsg, timestamp.Time().UTC().Format(time.RFC3339Nano), mimirpb.FromLabelAdaptersToLabels(labels).String())
 }
 
-func wrappedTSDBIngestExemplarErr(ingestErr error, timestamp model.Time, seriesLabels, exemplarLabels []mimirpb.LabelAdapter) error {
+func wrappedTSDBIngestExemplarMissingSeriesErr(ingestErr error, timestamp model.Time, seriesLabels, exemplarLabels []mimirpb.LabelAdapter) error {
+	if ingestErr == nil {
+		return nil
+	}
+
+	return fmt.Errorf(globalerror.ExemplarSeriesMissing.Message(errTSDBIngestExemplar), ingestErr, timestamp.Time().UTC().Format(time.RFC3339Nano),
+		mimirpb.FromLabelAdaptersToLabels(seriesLabels).String(),
+		mimirpb.FromLabelAdaptersToLabels(exemplarLabels).String(),
+	)
+}
+
+func wrappedTSDBIngestExemplarOtherErr(ingestErr error, timestamp model.Time, seriesLabels, exemplarLabels []mimirpb.LabelAdapter) error {
 	if ingestErr == nil {
 		return nil
 	}

@@ -1386,6 +1386,22 @@ How to **fix** it:
 
 - Increase the per-tenant limit by using the `-distributor.ha-tracker.max-clusters` option (or `ha_max_clusters` in the runtime configuration).
 
+### err-mimir-out-of-bounds
+
+TBA
+
+### err-mimir-out-of-order-sample
+
+TBA
+
+### err-mimir-duplicate-sample-for-timestamp
+
+TBA
+
+### err-mimir-exemplar-series-missing
+
+TBA
+
 ## Mimir routes by path
 
 **Write path**:
