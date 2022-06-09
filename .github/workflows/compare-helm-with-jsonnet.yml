@@ -6,9 +6,11 @@ on:
       - logiraptor/use-k8s-diff
 
 jobs:
-  call-yaml-patch:
-    uses: grafana/k8s-diff/yaml-patch/action.yml@add-github-actions
-    with:
-      input-dirs: operations/helm/tests/test-oss-values-generated,operations/mimir-tests/
-      output-dirs: operations/scratch/helm,operations/scratch/jsonnet
-      rules-files: operations/helm/k8s-diff/ignore_missing_objects.yaml,operations/k8s-diff/fix_k8s_names.yaml
+  compare-manifests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: grafana/k8s-diff/yaml-patch/action.yml@add-github-actions
+      with:
+        input-dirs: operations/helm/tests/test-oss-values-generated,operations/mimir-tests/
+        output-dirs: operations/scratch/helm,operations/scratch/jsonnet
+        rules-files: operations/helm/k8s-diff/ignore_missing_objects.yaml,operations/k8s-diff/fix_k8s_names.yaml
