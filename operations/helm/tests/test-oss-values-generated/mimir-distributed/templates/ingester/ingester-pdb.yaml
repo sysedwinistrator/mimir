@@ -3,11 +3,11 @@
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
-  name: test-oss-values-mimir-ingester
+  name: mimir-ingester
   labels:
     helm.sh/chart: mimir-distributed-2.2.0-weekly.189
     app.kubernetes.io/name: mimir
-    app.kubernetes.io/instance: test-oss-values
+    app.kubernetes.io/instance: mimir
     app.kubernetes.io/component: ingester
     app.kubernetes.io/part-of: memberlist
     app.kubernetes.io/version: "2.1.0"
@@ -16,6 +16,6 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: mimir
-      app.kubernetes.io/instance: test-oss-values
+      app.kubernetes.io/instance: mimir
       app.kubernetes.io/component: ingester
   maxUnavailable: 1

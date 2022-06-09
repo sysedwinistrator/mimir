@@ -3,11 +3,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: test-oss-values-mimir-store-gateway
+  name: mimir-store-gateway
   labels:
     helm.sh/chart: mimir-distributed-2.2.0-weekly.189
     app.kubernetes.io/name: mimir
-    app.kubernetes.io/instance: test-oss-values
+    app.kubernetes.io/instance: mimir
     app.kubernetes.io/component: store-gateway
     app.kubernetes.io/part-of: memberlist
     app.kubernetes.io/version: "2.1.0"
@@ -27,5 +27,5 @@ spec:
       targetPort: grpc
   selector:
     app.kubernetes.io/name: mimir
-    app.kubernetes.io/instance: test-oss-values
+    app.kubernetes.io/instance: mimir
     app.kubernetes.io/component: store-gateway

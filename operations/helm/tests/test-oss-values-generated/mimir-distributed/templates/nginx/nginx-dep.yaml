@@ -3,11 +3,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: test-oss-values-mimir-nginx
+  name: mimir-nginx
   labels:
     helm.sh/chart: mimir-distributed-2.2.0-weekly.189
     app.kubernetes.io/name: mimir
-    app.kubernetes.io/instance: test-oss-values
+    app.kubernetes.io/instance: mimir
     app.kubernetes.io/component: nginx
     app.kubernetes.io/version: "2.1.0"
     app.kubernetes.io/managed-by: Helm
@@ -20,21 +20,21 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: mimir
-      app.kubernetes.io/instance: test-oss-values
+      app.kubernetes.io/instance: mimir
       app.kubernetes.io/component: nginx
   template:
     metadata:
       annotations:
-        checksum/config: d7fa3f4c1e841a4634ee7561fa92990e6525d1bfdb176f416744e0b8f72ae99d
+        checksum/config: 395cbb1626740cebfbf229e280307c195b0c7230009b107ed4af708d0cee78fb
       labels:
         helm.sh/chart: mimir-distributed-2.2.0-weekly.189
         app.kubernetes.io/name: mimir
-        app.kubernetes.io/instance: test-oss-values
+        app.kubernetes.io/instance: mimir
         app.kubernetes.io/version: "2.1.0"
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/component: nginx
     spec:
-      serviceAccountName: test-oss-values-mimir
+      serviceAccountName: mimir
       securityContext:
         fsGroup: 101
         runAsGroup: 101
@@ -88,7 +88,7 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: test-oss-values-mimir-nginx
+            name: mimir-nginx
         - name: tmp
           emptyDir: {}
         - name: docker-entrypoint-d-override

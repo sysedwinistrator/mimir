@@ -3,11 +3,11 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: test-oss-values-mimir-store-gateway
+  name: mimir-store-gateway
   labels:
     helm.sh/chart: mimir-distributed-2.2.0-weekly.189
     app.kubernetes.io/name: mimir
-    app.kubernetes.io/instance: test-oss-values
+    app.kubernetes.io/instance: mimir
     app.kubernetes.io/component: store-gateway
     app.kubernetes.io/part-of: memberlist
     app.kubernetes.io/version: "2.1.0"
@@ -19,25 +19,25 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: mimir
-      app.kubernetes.io/instance: test-oss-values
+      app.kubernetes.io/instance: mimir
       app.kubernetes.io/component: store-gateway
   updateStrategy:
     type: RollingUpdate
-  serviceName: test-oss-values-mimir-store-gateway-headless
+  serviceName: mimir-store-gateway-headless
   template:
     metadata:
       labels:
         helm.sh/chart: mimir-distributed-2.2.0-weekly.189
         app.kubernetes.io/name: mimir
-        app.kubernetes.io/instance: test-oss-values
+        app.kubernetes.io/instance: mimir
         app.kubernetes.io/version: "2.1.0"
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/component: store-gateway
         app.kubernetes.io/part-of: memberlist
       annotations:
-        checksum/config: 7b9ed84df22bf324205968cf49b0d824eb15e1748888719ffc3bab3f17d5e2e4
+        checksum/config: 50a0358d5b3958b996629373021d6d9afcd03234864324c46b53c6c49a202752
     spec:
-      serviceAccountName: test-oss-values-mimir
+      serviceAccountName: mimir
       securityContext:
         {}
       initContainers:
@@ -60,10 +60,10 @@ spec:
       volumes:
         - name: config
           secret:
-            secretName: test-oss-values-mimir-config
+            secretName: mimir-config
         - name: runtime-config
           configMap:
-            name: test-oss-values-mimir-runtime
+            name: mimir-runtime
         - name: storage
           emptyDir: {}
       containers:

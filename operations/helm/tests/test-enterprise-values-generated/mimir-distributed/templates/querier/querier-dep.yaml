@@ -3,11 +3,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: test-enterprise-values-mimir-querier
+  name: mimir-querier
   labels:
     helm.sh/chart: mimir-distributed-2.2.0-weekly.189
     app.kubernetes.io/name: mimir
-    app.kubernetes.io/instance: test-enterprise-values
+    app.kubernetes.io/instance: mimir
     app.kubernetes.io/component: querier
     app.kubernetes.io/part-of: memberlist
     app.kubernetes.io/version: "2.1.0"
@@ -19,7 +19,7 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: mimir
-      app.kubernetes.io/instance: test-enterprise-values
+      app.kubernetes.io/instance: mimir
       app.kubernetes.io/component: querier
   strategy:
     rollingUpdate:
@@ -31,15 +31,15 @@ spec:
       labels:
         helm.sh/chart: mimir-distributed-2.2.0-weekly.189
         app.kubernetes.io/name: mimir
-        app.kubernetes.io/instance: test-enterprise-values
+        app.kubernetes.io/instance: mimir
         app.kubernetes.io/version: "2.1.0"
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/component: querier
         app.kubernetes.io/part-of: memberlist
       annotations:
-        checksum/config: 20297fef45efa773cd872a3e65ada08c59029003e83d3b1eace4d87bbf72ce99
+        checksum/config: 8119f85f3993751dba3a2b75ef79726ff0086cbd8c52ff6172b3d6d62e4e8f85
     spec:
-      serviceAccountName: test-enterprise-values-mimir
+      serviceAccountName: mimir
       securityContext:
         {}
       initContainers:
@@ -107,12 +107,12 @@ spec:
       volumes:
         - name: config
           secret:
-            secretName: test-enterprise-values-mimir-config
+            secretName: mimir-config
         - name: license
           secret:
-            secretName: test-enterprise-values-mimir-license
+            secretName: mimir-license
         - name: runtime-config
           configMap:
-            name: test-enterprise-values-mimir-runtime
+            name: mimir-runtime
         - name: storage
           emptyDir: {}

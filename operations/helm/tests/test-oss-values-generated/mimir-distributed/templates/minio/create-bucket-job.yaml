@@ -3,19 +3,19 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: test-oss-values-mimir-distributed-make-bucket-job
+  name: mimir-mimir-distributed-make-bucket-job
   namespace: "default"
   labels:
     app: mimir-distributed-make-bucket-job
     chart: mimir-distributed-2.2.0-weekly.189
-    release: test-oss-values
+    release: mimir
     heritage: Helm
 spec:
   template:
     metadata:
       labels:
         app: mimir-distributed-job
-        release: test-oss-values
+        release: mimir
     spec:
       restartPolicy: OnFailure      
       volumes:
@@ -23,9 +23,9 @@ spec:
           projected:
             sources:
             - configMap:
-                name: test-oss-values-minio
+                name: mimir-minio
             - secret:
-                name: test-oss-values-minio
+                name: mimir-minio
       containers:
       - name: minio-mc
         image: "minio/mc:RELEASE.2021-02-14T04-28-06Z"
@@ -33,7 +33,7 @@ spec:
         command: ["/bin/sh", "/config/initialize"]
         env:
           - name: MINIO_ENDPOINT
-            value: test-oss-values-minio
+            value: mimir-minio
           - name: MINIO_PORT
             value: "9000"
         volumeMounts:
