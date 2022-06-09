@@ -1,0 +1,50 @@
+---
+patch_rules:
+# NOTE: these rules depend on the rules in helm_labels.yaml to rename labels
+
+- name: "Rename /metadata/labels/memcached-queries to memcached-index-queries"
+  /metadata/labels/name: [memcached-queries]
+  steps:
+  - op: replace
+    path: "/metadata/labels/name"
+    value: memcached-index-queries
+
+- name: "Rename /spec/selector/memcached-queries to memcached-index-queries"
+  /spec/selector/name: [memcached-queries]
+  steps:
+  - op: replace
+    path: "/spec/selector/name"
+    value: memcached-index-queries
+
+- name: "Rename /spec/selector/matchLabels/memcached-queries to memcached-index-queries"
+  /spec/selector/matchLabels/name: [memcached-queries]
+  steps:
+  - op: replace
+    path: "/spec/selector/matchLabels/name"
+    value: memcached-index-queries
+
+- name: "Rename /spec/template/metadata/labels/memcached-queries to memcached-index-queries"
+  /spec/template/metadata/labels/name: [memcached-queries]
+  steps:
+  - op: replace
+    path: "/spec/template/metadata/labels/name"
+    value: memcached-index-queries
+
+- name: "Fix memcached Service ports to match exactly"
+  /kind: [Service]
+  /spec/ports/1/name: [exporter-http-metrics]
+  steps:
+  - op: replace
+    path: /spec/ports/0/name
+    value: memcache
+  - op: replace
+    path: /spec/ports/0/targetPort
+    value: memcache
+  - op: remove
+    path: /spec/ports/1
+
+- name: "Remove labels from memcached"
+  /metadata/labels/name: [memcached, memcached-index-queries, memcached-metadata]
+  steps:
+  - op: remove
+    path: /metadata/labels
