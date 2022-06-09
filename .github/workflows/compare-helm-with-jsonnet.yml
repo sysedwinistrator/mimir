@@ -1,6 +1,9 @@
 name: compare-helm-with-jsonnet
 
-on: pull_request
+on:
+  push:
+    branches:
+      - logiraptor/use-k8s-diff
 
 jobs:
   call-yaml-patch:
