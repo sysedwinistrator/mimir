@@ -45,7 +45,7 @@ spec:
         app.kubernetes.io/component: compactor
         app.kubernetes.io/part-of: memberlist
       annotations:
-        checksum/config: c159b0dc24e4c05280dc59e0bd023cf183d0d7ed6f1bf9ec5260790eadaf12a7
+        checksum/config: 8f6175d9090aff9dd7863a121ce860949c46ab12d8d7d77e3f3fc1cca23ac83a
     spec:
       serviceAccountName: default
       securityContext:

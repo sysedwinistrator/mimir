@@ -16,6 +16,9 @@ patch_rules:
     from: 'mimir-distributor'
     to: 'distributor'
 - rename_object:
+    from: 'mimir-distributor-headless'
+    to: 'distributor'
+- rename_object:
     from: 'mimir-querier'
     to: 'querier'
 - rename_object:
@@ -54,6 +57,9 @@ patch_rules:
 - rename_object:
     from: 'mimir-memcached-metadata'
     to: 'memcached-metadata'
+- rename_object:
+    from: 'mimir-memcached-results'
+    to: 'memcached-frontend'
 - rename_object:
     from: 'mimir-gossip-ring'
     to: 'gossip-ring'
