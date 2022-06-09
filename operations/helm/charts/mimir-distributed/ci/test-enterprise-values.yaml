@@ -22,15 +22,3 @@ ingester:
 store_gateway:
   persistentVolume:
     enabled: false
-
-memcached:
-  enabled: true
-
-memcached-metadata:
-  enabled: true
-
-memcached-queries:
-  enabled: true
-
-memcached-results:
-  enabled: true

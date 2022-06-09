@@ -35,7 +35,7 @@ spec:
         app.kubernetes.io/component: compactor
         app.kubernetes.io/part-of: memberlist
       annotations:
-        checksum/config: f2621ae455799da6b4f7e0a3390262b29a454c04c3c780eb4cd758c237e8252a
+        checksum/config: 50a0358d5b3958b996629373021d6d9afcd03234864324c46b53c6c49a202752
     spec:
       serviceAccountName: mimir
       securityContext:
