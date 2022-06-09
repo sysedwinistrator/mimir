@@ -11,8 +11,8 @@ patch_rules:
 # The name label in Jsonnet is the same as Helm's app.kubernetes.io/component
 # label when it exists. If no app.kubernetes.io/component label exists, then use
 # the app.kubernetes.io/name label. To accomplish this, we rename
-# app.kubernetes.io/name first, then app.kubernetes.io will overrite if it
-# exists.
+# app.kubernetes.io/name first, then app.kubernetes.io/component will overwrite
+# if it exists.
 - rename_field:
     from: '/metadata/labels/app.kubernetes.io~1name'
     to: /metadata/labels/name
@@ -50,3 +50,4 @@ patch_rules:
 - remove_field: '/spec/template/metadata/labels/app.kubernetes.io~1managed-by'
 - remove_field: '/spec/template/metadata/labels/app.kubernetes.io~1version'
 - remove_field: '/spec/template/metadata/labels/helm.sh~1chart'
+- remove_field: '/metadata/labels/prometheus.io~1service-monitor'

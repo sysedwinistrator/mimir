@@ -14,5 +14,6 @@ mimir + overridesExporter {
     alertmanager_enabled: true,
     ruler_enabled: true,
     memberlist_ring_enabled: true,
+    unregister_ingesters_on_shutdown: false,
   },
 }

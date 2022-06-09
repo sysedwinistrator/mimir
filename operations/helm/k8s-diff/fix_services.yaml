@@ -48,13 +48,3 @@ patch_rules:
   - op: remove
     path: /spec/publishNotReadyAddresses
   
-- name: "Make distributor service headless"
-  /kind: [Service]
-  /metadata/name: [distributor]
-  steps:
-  - op: add
-    path: /spec/clusterIP
-    value: None
-  - op: add
-    path: /spec/clusterIPs
-    value: [None]
