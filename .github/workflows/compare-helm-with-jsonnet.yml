@@ -7,7 +7,7 @@ on:
 
 jobs:
   call-yaml-patch:
-    uses: grafana/k9s-diff/yaml-patch/action.yml@add-github-actions
+    uses: grafana/k8s-diff/yaml-patch/action.yml@add-github-actions
     with:
       input-dirs: operations/helm/tests/test-oss-values-generated,operations/mimir-tests/
       output-dirs: operations/scratch/helm,operations/scratch/jsonnet
