@@ -10,5 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: grafana/k8s-diff/setup-k8s-diff@add-github-actions
+    - uses: actions/checkout@v2
     - run: ./operations/helm/k8s-diff/compare-with-jsonnet
       shell: bash

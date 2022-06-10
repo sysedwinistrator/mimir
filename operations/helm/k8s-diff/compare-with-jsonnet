@@ -56,4 +56,4 @@ yaml-patch \
     -rules "$operationsDir/helm/k8s-diff/ignore_config_file.yaml" \
     -rules "$operationsDir/helm/k8s-diff/ignore_k8s.yaml"
 
-difft --skip-unchanged --missing-as-empty "$helmOutput" "$jsonnetOutput"
+diff -u -r "$helmOutput" "$jsonnetOutput"
